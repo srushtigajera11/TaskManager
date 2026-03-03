@@ -1,5 +1,5 @@
 const express = require('express')
-const authRoute = require("./Routes/auth.controller")
+const authRoute = require("./routes/auth.route")
 const app = express();
 
 app.use(express.json());
