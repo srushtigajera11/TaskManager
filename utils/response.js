@@ -1,19 +1,19 @@
 const sendResponse = (
-    res,
-    statusCode,
+  res,
+  statusCode,
+  message,
+  data = null,
+  meta = null
+) => {
+  const response = {
+    success: statusCode < 400,
     message,
-    data=null,
-    meta=null,
-    success=true
-)=>{
-    const response = {
-        success,
-        message,
-    };
-    if(data !== null) response.data = data;
-    if(meta) response.meta = meta;
+  };
 
-    return res.status(statusCode).json(response);
+  if (data !== null) response.data = data;
+  if (meta) response.meta = meta;
+
+  return res.status(statusCode).json(response);
 };
 
 module.exports = sendResponse;

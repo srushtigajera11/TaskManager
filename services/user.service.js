@@ -3,17 +3,34 @@ const Company = require("../models/company.model");
 const AppError = require("../utils/AppError");
 
 exports.createUser = async (data, currentUser) => {
+  // 1️⃣ Role restriction logic
+
+  if (currentUser.role === "ADMIN") {
+    if (data.role !== "USER") {
+      throw new AppError(
+        "Admin can only create users with role USER",
+        403
+      );
+    }
+  }
+
+  if (currentUser.role === "USER") {
+    throw new AppError("Users are not allowed to create accounts", 403);
+  }
+
+  // 2️⃣ Prevent duplicate email
   const existingUser = await User.findOne({ email: data.email });
   if (existingUser) {
     throw new AppError("Email already exists", 400);
   }
 
-  // Company isolation
+  // 3️⃣ Company isolation
   if (currentUser.role !== "SUPER_ADMIN") {
     data.company_id = currentUser.company_id;
   }
 
   const user = await User.create(data);
+
   return user;
 };
 
@@ -23,7 +40,7 @@ exports.updateUser = async (userId, data, currentUser) => {
     throw new AppError("User not found", 404);
   }
 
-  // Prevent cross-company update
+  // Company isolation
   if (
     currentUser.role !== "SUPER_ADMIN" &&
     user.company_id.toString() !== currentUser.company_id.toString()
@@ -31,12 +48,25 @@ exports.updateUser = async (userId, data, currentUser) => {
     throw new AppError("Unauthorized access", 403);
   }
 
+  // 🔴 Prevent role escalation
+  if (currentUser.role === "ADMIN") {
+    if (data.role && data.role !== "USER") {
+      throw new AppError(
+        "Admin cannot change role to ADMIN or SUPER_ADMIN",
+        403
+      );
+    }
+  }
+
+  if (currentUser.role === "USER") {
+    throw new AppError("Users cannot update accounts", 403);
+  }
+
   Object.assign(user, data);
   await user.save();
 
   return user;
 };
-
 exports.deleteUser = async (userId, currentUser) => {
   const user = await User.findById(userId);
   if (!user) {
