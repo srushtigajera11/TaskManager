@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/user.model");
+const User = require("../models/user.model")
 const AppError = require("../utils/AppError");
 const crypto = require("crypto");
 exports.login = async (email, password) => {
@@ -21,8 +21,12 @@ exports.login = async (email, password) => {
 
   user.refreshToken = hashedRefreshToken;
   await user.save();
+  // 🔐 Remove sensitive fields
+  const userObj = user.toObject();
+  delete userObj.password;
+  delete userObj.refreshToken;
 
-  return { user, accessToken, refreshToken };
+  return { user:userObj , accessToken, refreshToken };
 };
 
 const generateAccessToken = (user) => {
@@ -33,7 +37,7 @@ const generateAccessToken = (user) => {
       company_id: user.company_id,
     },
     process.env.JWT_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: "15h" }
   );
 };
 

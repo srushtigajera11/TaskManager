@@ -28,7 +28,7 @@ const companySchema = new mongoose.Schema({
         name : {type:String,required:true},
         maxUsers : {type:Number , required:true},
         maxProjects : {type:Number,required : true},
-        durantionInDays :{type:Number , required:true},
+        durationInDays :{type:Number , required:true},
         price : {type:Number , required:true},
         planExpiryDate : {type:Date, required:true},
         isActive : {type:Boolean , default : true}

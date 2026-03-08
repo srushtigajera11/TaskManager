@@ -15,9 +15,8 @@ exports.createCompanySchema = Joi.object({
     maxProjects: Joi.number().min(1).required(),
     durationInDays: Joi.number().min(1).required(),
     price: Joi.number().min(0).required(),
-  }).required(),
-
-  planExpiryDate: Joi.date().required(),
+    planExpiryDate: Joi.date().required()
+  }).required()
 });
 
 exports.updateCompanySchema = Joi.object({
