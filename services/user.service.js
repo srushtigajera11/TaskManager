@@ -5,7 +5,7 @@ const AppError = require("../utils/AppError");
 exports.createUser = async (data, currentUser) => {
   // 1️⃣ Role restriction logic
 
-  if (currentUser.role === "ADMIN") {
+  if (currentUser.role === "admin") {
     if (data.role !== "USER") {
       throw new AppError(
         "Admin can only create users with role USER",
@@ -14,7 +14,7 @@ exports.createUser = async (data, currentUser) => {
     }
   }
 
-  if (currentUser.role === "USER") {
+  if (currentUser.role === "user") {
     throw new AppError("Users are not allowed to create accounts", 403);
   }
 
@@ -25,13 +25,15 @@ exports.createUser = async (data, currentUser) => {
   }
 
   // 3️⃣ Company isolation
-  if (currentUser.role !== "SUPER_ADMIN") {
+  if (currentUser.role !== "super_admin") {
     data.company_id = currentUser.company_id;
   }
 
   const user = await User.create(data);
-
-  return user;
+   const userObj = user.toObject();
+  delete userObj.password;
+  delete userObj.refreshToken;
+  return userObj;
 };
 
 exports.updateUser = async (userId, data, currentUser) => {
@@ -42,14 +44,13 @@ exports.updateUser = async (userId, data, currentUser) => {
 
   // Company isolation
   if (
-    currentUser.role !== "SUPER_ADMIN" &&
+    currentUser.role !== "super_admin" &&
     user.company_id.toString() !== currentUser.company_id.toString()
   ) {
     throw new AppError("Unauthorized access", 403);
   }
 
-  // 🔴 Prevent role escalation
-  if (currentUser.role === "ADMIN") {
+  if (currentUser.role === "admin") {
     if (data.role && data.role !== "USER") {
       throw new AppError(
         "Admin cannot change role to ADMIN or SUPER_ADMIN",
@@ -58,7 +59,7 @@ exports.updateUser = async (userId, data, currentUser) => {
     }
   }
 
-  if (currentUser.role === "USER") {
+  if (currentUser.role === "user") {
     throw new AppError("Users cannot update accounts", 403);
   }
 
@@ -74,7 +75,7 @@ exports.deleteUser = async (userId, currentUser) => {
   }
 
   if (
-    currentUser.role !== "SUPER_ADMIN" &&
+    currentUser.role !== "super_admin" &&
     user.company_id.toString() !== currentUser.company_id.toString()
   ) {
     throw new AppError("Unauthorized access", 403);
@@ -88,7 +89,7 @@ exports.getUsers = async (page = 1, limit = 10, currentUser) => {
   const skip = (page - 1) * limit;
 
   const filter =
-    currentUser.role === "SUPER_ADMIN"
+    currentUser.role === "super_admin"
       ? {}
       : { company_id: currentUser.company_id };
 

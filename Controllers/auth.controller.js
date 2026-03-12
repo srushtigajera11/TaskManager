@@ -30,6 +30,15 @@ exports.refreshToken = async (req, res, next) => {
   }
 };
 
+exports.register = async(req,res,next)=>{
+  try{
+    const result = await authService.register(req.body);
+    sendResponse(res,201,"Registration successful. Please complete payment to activate your account.", result);
+  }catch(err){
+    next(err)
+  }
+}
+
 exports.logout = async (req, res, next) => {
   try {
     await authService.logout(req.user.id);

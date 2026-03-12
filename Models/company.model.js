@@ -1,38 +1,44 @@
-const { string, required } = require('joi');
-const mongoose = require('mongoose')
-const companySchema = new mongoose.Schema({
-    name:{
-        type : String,
-        required : true
-    }, 
-    
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
+// models/company.model.js
+const mongoose = require("mongoose");
 
-    phone: {
-      type: String,
-      required: true,
-    },
+const companySchema = new mongoose.Schema(
+{
+  name: {
+    type: String,
+    required: true
+  },
+  phone:{
+    type:String,
+    required:true,
+    trim : true
+  },
+  address: {
+    type: String,
+    trim: true  
+  },
+  email: {  
+    type: String,
+    required: true,
+    trim: true,
+    unique: true
+  },
+  
+  status: {
+    type: String,
+    enum: ["pending", "active", "payment_failed"],
+    default: "pending"
+  },
 
-    address: {
-      type: String,
-      trim: true,
-    },
+  plan: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Plan"
+  },
 
-    plan :{
-        name : {type:String,required:true},
-        maxUsers : {type:Number , required:true},
-        maxProjects : {type:Number,required : true},
-        durationInDays :{type:Number , required:true},
-        price : {type:Number , required:true},
-        planExpiryDate : {type:Date, required:true},
-        isActive : {type:Boolean , default : true}
-    }
-},{timestamps:true});
+  expiryDate: Date,
 
-module.exports = mongoose.model('Company',companySchema);
+  payment_link_id: String
+},
+{ timestamps: true }
+);
+
+module.exports = mongoose.model("Company", companySchema);

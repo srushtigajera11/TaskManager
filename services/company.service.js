@@ -31,20 +31,23 @@ exports.deleteCompany = async (companyId) => {
   return true;
 };
 
-exports.getCompanies = async (page = 1, limit = 10) => {
+exports.getCompanies = async ({ page = 1, limit = 10, search = "", sort = "createdAt", order = "desc" }) => {
   const skip = (page - 1) * limit;
 
-  const companies = await Company.find()
-    .skip(skip)
-    .limit(limit)
-    .sort({ createdAt: -1 });
+  const filter = search
+    ? { name: { $regex: search, $options: "i" } }
+    : {};
 
-  const total = await Company.countDocuments();
+  const sortOrder = order === "asc" ? 1 : -1;
 
-  return {
-    total,
-    page,
-    limit,
-    companies,
-  };
+  const [companies, total] = await Promise.all([
+    Company.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ [sort]: sortOrder })
+      .populate("plan", "name maxUsers maxProjects price"),
+    Company.countDocuments(filter),
+  ]);
+
+  return { total, page, limit, totalPages: Math.ceil(total / limit), companies };
 };

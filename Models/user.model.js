@@ -14,28 +14,25 @@ const userSchema = new mongoose.Schema({
    password:{
       type: String,
       required: true,
-      minlength: 6,
       select: false, // never return password by default
    },
-     role: {
-      type: String,
-      enum: ["SUPER_ADMIN", "ADMIN", "USER"],
-      required: true,
-    },
+    
+  role: {
+    type: String,
+    enum: ["super_admin","admin","user"]
+  },
 
-    company_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Company",
-      required: function () {
-        return this.role !== "SUPER_ADMIN";
-      },
-    },
+  status: {
+    type: String,
+    enum: ["inactive","active"],
+    default: "inactive"
+  },
 
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    refreshToken: {
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company"
+  },
+  refreshToken: {
   type: String,
   select: false,
 }

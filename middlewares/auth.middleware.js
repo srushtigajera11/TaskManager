@@ -5,8 +5,6 @@ const AppError = require("../utils/AppError");
 exports.authenticate = async (req, res, next) => {
   try {
     let token;
-
-    // 1️⃣ Extract token from header
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
@@ -18,21 +16,18 @@ exports.authenticate = async (req, res, next) => {
       return next(new AppError("Access denied. No token provided.", 401));
     }
 
-    // 2️⃣ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 3️⃣ Fetch user from DB
     const user = await User.findById(decoded.id);
 
     if (!user) {
       return next(new AppError("User not found.", 401));
     }
 
-    if (!user.isActive) {
-      return next(new AppError("User account is inactive.", 403));
-    }
+    // if (user.status !== ) {
+    //   return next(new AppError("User account is inactive.", 403));
+    // }
 
-    // 4️⃣ Attach user to request
     req.user = user;
 
     next();

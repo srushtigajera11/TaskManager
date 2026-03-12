@@ -12,7 +12,7 @@ const seedSuperAdmin = async()=>{
   name: "Super Admin",
   email: "superadmin@test.com",
   password: "123456",
-  role: "SUPER_ADMIN",
+  role: "super_admin",
   company_id: null
 });
   console.log("super Admin created");
