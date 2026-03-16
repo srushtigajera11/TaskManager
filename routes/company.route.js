@@ -21,7 +21,7 @@ router.post(
 router.put(
   "/:id",
   authenticate,
-  authorize("SUPER_ADMIN"),
+  authorize("super_admin"),
   validate(updateCompanySchema),
   companyController.updateCompany
 );
@@ -29,14 +29,14 @@ router.put(
 router.delete(
   "/:id",
   authenticate,
-  authorize("SUPER_ADMIN"),
+  authorize("super_admin"),
   companyController.deleteCompany
 );
 
 router.get(
   "/",
   authenticate,
-  authorize("SUPER_ADMIN"),
+  authorize("super_admin"),
   companyController.getCompanies
 );
 

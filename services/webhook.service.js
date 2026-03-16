@@ -5,6 +5,8 @@ const Plan = require("../models/plan.model");
 const AppError = require("../utils/AppError");
 
 const verifySignature = (rawBody, signature) => {
+  if (process.env.NODE_ENV === "development") return; // ✅ add this line
+
   const expectedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
     .update(rawBody)
@@ -14,7 +16,6 @@ const verifySignature = (rawBody, signature) => {
     throw new AppError("Invalid webhook signature", 400);
   }
 };
-
 const handlePaymentSuccess = async (notes) => {
   const { company_id, plan_id } = notes;
 

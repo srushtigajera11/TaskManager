@@ -5,7 +5,7 @@ exports.createUser = async (req, res, next) => {
   try {
     const user = await userService.createUser(req.body, req.user);
 
-    sendResponse(res, 201, true, "User created successfully", user);
+    sendResponse(res, 201, "User created successfully", user);
   } catch (error) {
     next(error);
   }
@@ -19,7 +19,7 @@ exports.updateUser = async (req, res, next) => {
       req.user
     );
 
-    sendResponse(res, 200, true, "User updated successfully", user);
+    sendResponse(res, 200, "User updated successfully", user);
   } catch (error) {
     next(error);
   }
@@ -28,7 +28,7 @@ exports.deleteUser = async (req, res, next) => {
   try {
     await userService.deleteUser(req.params.id, req.user);
 
-    sendResponse(res, 200, true, "User deleted successfully", null);
+    sendResponse(res, 200, "User deleted successfully", null);
   } catch (error) {
     next(error);
   }
@@ -43,8 +43,7 @@ exports.getUsers = async (req, res, next) => {
       Number(limit),
       req.user
     );
-
-    sendResponse(res, 200, true, "Users fetched successfully", result);
+    sendResponse(res, 200,  "Users fetched successfully", result);
   } catch (error) {
     next(error);
   }

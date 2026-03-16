@@ -3,34 +3,32 @@ const Company = require("../models/company.model");
 const AppError = require("../utils/AppError");
 
 exports.createUser = async (data, currentUser) => {
-  // 1️⃣ Role restriction logic
-
-  if (currentUser.role === "admin") {
-    if (data.role !== "USER") {
-      throw new AppError(
-        "Admin can only create users with role USER",
-        403
-      );
-    }
-  }
-
-  if (currentUser.role === "user") {
-    throw new AppError("Users are not allowed to create accounts", 403);
-  }
-
-  // 2️⃣ Prevent duplicate email
   const existingUser = await User.findOne({ email: data.email });
-  if (existingUser) {
-    throw new AppError("Email already exists", 400);
+  if (existingUser) throw new AppError("Email already exists", 400);
+
+  const company = await Company.findById(currentUser.company._id).populate("plan");
+  if (!company) throw new AppError("Company not found", 404);
+
+  const userCount = await User.countDocuments({
+    company: currentUser.company._id,
+    role: "user", 
+  });
+
+  if (userCount >= company.plan.maxUsers) {
+    throw new AppError(
+      `User limit reached. Your plan allows maximum ${company.plan.maxUsers} users.`,
+      403
+    );
   }
 
-  // 3️⃣ Company isolation
-  if (currentUser.role !== "super_admin") {
-    data.company_id = currentUser.company_id;
-  }
+  const user = await User.create({
+    ...data,
+    role: "user",                        
+    status: "active",                   
+    company: currentUser.company._id,   
+  });
 
-  const user = await User.create(data);
-   const userObj = user.toObject();
+  const userObj = user.toObject();
   delete userObj.password;
   delete userObj.refreshToken;
   return userObj;
@@ -41,44 +39,15 @@ exports.updateUser = async (userId, data, currentUser) => {
   if (!user) {
     throw new AppError("User not found", 404);
   }
-
-  // Company isolation
-  if (
-    currentUser.role !== "super_admin" &&
-    user.company_id.toString() !== currentUser.company_id.toString()
-  ) {
-    throw new AppError("Unauthorized access", 403);
-  }
-
-  if (currentUser.role === "admin") {
-    if (data.role && data.role !== "USER") {
-      throw new AppError(
-        "Admin cannot change role to ADMIN or SUPER_ADMIN",
-        403
-      );
-    }
-  }
-
-  if (currentUser.role === "user") {
-    throw new AppError("Users cannot update accounts", 403);
-  }
-
+  
   Object.assign(user, data);
   await user.save();
-
   return user;
 };
 exports.deleteUser = async (userId, currentUser) => {
   const user = await User.findById(userId);
   if (!user) {
     throw new AppError("User not found", 404);
-  }
-
-  if (
-    currentUser.role !== "super_admin" &&
-    user.company_id.toString() !== currentUser.company_id.toString()
-  ) {
-    throw new AppError("Unauthorized access", 403);
   }
 
   await user.deleteOne();

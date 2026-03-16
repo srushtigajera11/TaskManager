@@ -4,7 +4,7 @@ const sendResponse = require("../utils/response");
 exports.createPlan = async (req, res, next) => {
   try {
     const plan = await planService.createPlan(req.body);
-    sendResponse(res, 201, "Plan created successfully", { plan });
+    sendResponse(res, 201,"Plan created successfully", { plan });
   } catch (error) {
     next(error);
   }

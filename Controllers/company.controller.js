@@ -4,7 +4,7 @@ const sendResponse = require("../utils/response");
 exports.createCompany = async(req,res,next)=>{
     try{
         const company = await companyService.createCompany(req.body);
-        sendResponse(res,201,true,"company created Successfully",company);
+        sendResponse(res,201,"company created Successfully",company);
     }catch (error) {
     next(error);
   }
@@ -17,7 +17,7 @@ exports.updateCompany = async (req, res, next) => {
       req.body
     );
 
-    sendResponse(res, 200, true, "Company updated successfully", company);
+    sendResponse(res, 200,"Company updated successfully", company);
   } catch (error) {
     next(error);
   }
@@ -26,7 +26,7 @@ exports.deleteCompany = async (req, res, next) => {
   try {
     await companyService.deleteCompany(req.params.id);
 
-    sendResponse(res, 200, true, "Company deleted successfully", null);
+    sendResponse(res, 200, "Company deleted successfully", null);
   } catch (error) {
     next(error);
   }
@@ -40,7 +40,7 @@ exports.getCompanies = async (req, res, next) => {
       Number(limit)
     );
 
-    sendResponse(res, 200, true, "Companies fetched successfully", result);
+    sendResponse(res, 200,"Companies fetched successfully", result);
   } catch (error) {
     next(error);
   }

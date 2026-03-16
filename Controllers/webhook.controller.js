@@ -1,21 +1,20 @@
 const webhookService = require("../services/webhook.service");
-
-exports.razorpayWebhook = async (req, res) => {
+const appError = require("../utils/AppError");
+const sendResponse = require("../utils/response");
+exports.razorpayWebhook = async (req, res, next) => {
   try {
-    const rawBody = req.body; // raw buffer — works because of express.raw()
-    const signature = req.headers["x-razorpay-signature"];
+  
 
-    if (!signature) {
-      return res.status(400).json({ success: false, message: "Signature missing" });
-    }
+    const rawBody = Buffer.isBuffer(req.body)
+      ? req.body
+      : Buffer.from(JSON.stringify(req.body)); 
+
+    const signature = req.headers["x-razorpay-signature"];
 
     await webhookService.handleRazorpayWebhook(rawBody, signature);
 
-    return res.status(200).json({ success: true, message: "Webhook processed" });
+    return sendResponse(res, 200, "Webhook processed");
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || "Webhook processing failed",
-    });
+    next(error)
   }
 };

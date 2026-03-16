@@ -35,7 +35,5 @@ module.exports = (err, req, res, next) => {
     message = "Token expired";
   }
 
-  console.error("ERROR:", err);
-
   return sendResponse(res, statusCode, message, errors);
 };

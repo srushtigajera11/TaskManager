@@ -24,9 +24,9 @@ exports.authenticate = async (req, res, next) => {
       return next(new AppError("User not found.", 401));
     }
 
-    // if (user.status !== ) {
-    //   return next(new AppError("User account is inactive.", 403));
-    // }
+    if (user.status !== "active") {
+  return next(new AppError("User account is inactive.", 403));
+}
 
     req.user = user;
 
