@@ -6,6 +6,7 @@ const taskSchema = new mongoose.Schema({
     description : {type : String , trim : true},
     project : {type : mongoose.Schema.Types.ObjectId , ref : "Project", required : true},
     company : {type : mongoose.Schema.Types.ObjectId , ref : "Company", required : true},
+    createdBy : {type : mongoose.Schema.Types.ObjectId , ref : "User", required : true},
     reportTo : {type : mongoose.Schema.Types.ObjectId , ref : "User", required : true},
     assignedTo : {type : mongoose.Schema.Types.ObjectId , ref : "User"},
     priority : {type : String , enum : ["low", "medium", "high"], default : "medium"},

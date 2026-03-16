@@ -18,6 +18,7 @@ app.use("/api/companies",companyRoute);
 app.use("/api/users", userRoute);
 app.use("/api/plans", planRoute);
 app.use("/api/projects", require("./routes/project.route"));
+app.use("/api/tasks", require("./routes/task.rotue"));
 
 app.get('/',(req,res)=>{
     res.send("TaskManager API is working!");

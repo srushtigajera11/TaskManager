@@ -28,3 +28,16 @@ exports.assignUsers = async(req,res,next)=>{
         next(err);
     }   
 }
+
+exports.getProjects = async (req, res, next) => {
+  try {
+    const companyId = req.user.company._id;
+    const userId = req.user._id;
+    const role = req.user.role;
+
+    const result = await projectService.getProjects(companyId, userId, role, req.query);
+    sendResponse(res, 200, "Projects fetched successfully", result);
+  } catch (err) {
+    next(err);
+  }
+};

@@ -57,3 +57,33 @@ exports.assignUsers = async (projectId, userIds, currentUser) => {
   await project.save();
   return project;
 };
+
+exports.getProjects = async(companyId, userId, role, query) => {
+     const { page = 1, limit = 10, search = "", sort = "createdAt", order = "desc" } = query;
+  const skip = (page - 1) * limit;
+     if (role === "user") {
+    filter.assignedUsers = userId;
+  }
+
+  // ✅ Search by name
+  if (search) {
+    filter.name = { $regex: search, $options: "i" };
+  }
+  const sortOrder = order === "asc" ? 1 : -1;
+  const [projects,total] = await Promise.all([
+  Project.find(filter)
+      .skip(skip)
+      .limit(Number(limit))
+      .sort({ [sort]: sortOrder })
+      .populate("assignedUsers", "name email")
+      .populate("createdBy", "name email"),
+    Project.countDocuments(filter),
+  ]);
+return {
+    total,
+    page: Number(page),
+    limit: Number(limit),
+    totalPages: Math.ceil(total / limit),
+    projects,
+  };
+};

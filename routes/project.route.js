@@ -7,4 +7,5 @@
 
     router.post("/",authenticate ,authorize('admin'),validate(createProjectSchema),projectController.createProject);
     router.post("/:id/assign-users",authenticate,authorize('admin'),projectController.assignUsers);
+    router.get("/",authenticate,authorize('admin'),projectController.getProjects);
     module.exports = router;
