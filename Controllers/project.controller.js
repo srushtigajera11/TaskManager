@@ -21,7 +21,7 @@ exports.assignUsers = async(req,res,next)=>{
         if(!userIds || !Array.isArray(userIds) || userIds.length === 0){
             throw new AppError("userIds must be a non-empty array",400);
         }
-        const project = await projectService.assignUsers(projectId,userIds);
+        const project = await projectService.assignUsers(projectId,userIds,req.user);
         sendResponse(res,200,"Users assigned successfully",project);
     }
     catch(err){

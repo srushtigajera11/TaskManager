@@ -10,3 +10,9 @@ exports.createTaskSchema = Joi.object({
   status:      Joi.string().valid("to-do", "in-progress", "done", "testing", "qa-verified", "re-open", "deployment").default("to-do"),
   dueDate:     Joi.date().optional(),
 });
+
+exports.updateStatusSchema = Joi.object({
+  status: Joi.string()
+    .valid("to-do", "in-progress", "done", "testing", "qa-verified", "re-open", "deployment")
+    .required(),
+});

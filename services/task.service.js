@@ -36,3 +36,73 @@ exports.createTask = async (companyId,userId,data)=>{
     });
     return task;
 }
+
+exports.getTasks = async (companyId, userId, role, query) => {
+    const filter = { company: companyId };
+    if (role === "user") {
+        filter.$or = [
+            { assignedTo: userId },
+            { reportTo: userId },
+            { createdBy: userId }
+        ];
+    }
+    if (query.status) {
+        filter.status = query.status;
+    }
+    if (query.priority) {
+        filter.priority = query.priority;
+    }
+    if (query.dueDate) {
+        filter.dueDate = { $lte: new Date(query.dueDate) };
+    }
+    const tasks =
+        await Task.find(filter)
+            .populate("project", "name shortCode")
+            .populate("assignedTo", "name email")
+            .populate("reportTo", "name email")
+            .populate("createdBy", "name email")
+            .sort({ createdAt: -1 });
+    return tasks;
+};
+
+exports.updateTask = async (taskId, data, currentUser) => {
+    const task = await Task.findById(taskId);
+    if(!task) throw new AppError("Task not found",404);
+    if (task.company.toString() !== currentUser.company._id.toString()) {
+        throw new AppError("Unauthorized access", 403);
+    }
+    Object.assign(task, data);
+    await task.save();
+    return task;
+}
+
+exports.deleteTask = async (taskId, currentUser) => {
+    const task = await Task.findById(taskId);
+    if(!task) throw new AppError("Task not found",404);
+    if (task.company.toString() !== currentUser.company._id.toString()) {
+        throw new AppError("Unauthorized access", 403);
+    } 
+    await task.deleteOne();
+    return true;
+}
+
+exports.updateStatus = async (taskId, data, currentUser) => {
+  const task = await Task.findById(taskId);
+  if (!task) throw new AppError("Task not found", 404);
+
+  // Company isolation
+  if (task.company.toString() !== currentUser.company._id.toString()) {
+    throw new AppError("Unauthorized access", 403);
+  }
+
+  // ✅ User can only update status of tasks assigned to them
+  if (currentUser.role === "user") {
+    if (!task.assignedTo || task.assignedTo.toString() !== currentUser._id.toString()) {
+      throw new AppError("You can only update status of tasks assigned to you", 403);
+    }
+  }
+
+  task.status = data.status;
+  await task.save();
+  return task;
+};

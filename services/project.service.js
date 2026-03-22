@@ -32,7 +32,7 @@ exports.createProject = async (companyId, userId, data) => {
   return project;
 };
 
-exports.assignUsers = async (projectId, userIds, currentUser) => {
+exports.assignUsers = async (projectId, userIds,currentUser) => {
   const project = await Project.findById(projectId);
   if (!project) throw new AppError("Project not found", 404);
 
@@ -59,13 +59,13 @@ exports.assignUsers = async (projectId, userIds, currentUser) => {
 };
 
 exports.getProjects = async(companyId, userId, role, query) => {
+     const filter = { company: companyId };  
      const { page = 1, limit = 10, search = "", sort = "createdAt", order = "desc" } = query;
   const skip = (page - 1) * limit;
      if (role === "user") {
     filter.assignedUsers = userId;
   }
-
-  // ✅ Search by name
+   
   if (search) {
     filter.name = { $regex: search, $options: "i" };
   }

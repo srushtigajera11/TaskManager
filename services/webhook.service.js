@@ -5,7 +5,7 @@ const Plan = require("../models/plan.model");
 const AppError = require("../utils/AppError");
 
 const verifySignature = (rawBody, signature) => {
-  if (process.env.NODE_ENV === "development") return; // ✅ add this line
+  if (process.env.NODE_ENV === "development") return; 
 
   const expectedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
@@ -46,16 +46,16 @@ const handlePaymentFailure = async (notes) => {
 };
 
 exports.handleRazorpayWebhook = async (rawBody, signature) => {
-  // Step 1: Verify signature
+  
   verifySignature(rawBody, signature);
 
-  // Step 2: Parse body
+ 
   const event = JSON.parse(rawBody);
 
-  // Step 3: Extract notes
+ 
   const notes = event?.payload?.payment?.entity?.notes;
 
-  // Step 4: Handle events
+ 
   switch (event.event) {
     case "payment_link.paid":
       await handlePaymentSuccess(notes);
@@ -67,7 +67,7 @@ exports.handleRazorpayWebhook = async (rawBody, signature) => {
       break;
 
     default:
-      // Unhandled event — ignore silently
+      
       break;
   }
 };
