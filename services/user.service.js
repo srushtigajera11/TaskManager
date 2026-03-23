@@ -1,6 +1,7 @@
 const User = require("../models/user.model");
 const Company = require("../models/company.model");
 const AppError = require("../utils/AppError");
+const { sendWelcomeEmail } = require("./email.service");
 
 exports.createUser = async (data, currentUser) => {
   const existingUser = await User.findOne({ email: data.email });
@@ -20,14 +21,14 @@ exports.createUser = async (data, currentUser) => {
       403
     );
   }
-
+ const plainPassword = data.password;
   const user = await User.create({
     ...data,
     role: "user",                        
     status: "active",                   
     company: currentUser.company._id,   
   });
-
+  await sendWelcomeEmail(data.email, plainPassword, company.name);
   const userObj = user.toObject();
   delete userObj.password;
   delete userObj.refreshToken;

@@ -17,6 +17,7 @@ const verifySignature = (rawBody, signature) => {
   }
 };
 const handlePaymentSuccess = async (notes) => {
+
   const { company_id, plan_id } = notes;
 
   const plan = await Plan.findById(plan_id);
@@ -25,18 +26,20 @@ const handlePaymentSuccess = async (notes) => {
   const expiryDate = new Date();
   expiryDate.setDate(expiryDate.getDate() + plan.durationInDays);
 
-  await Company.findByIdAndUpdate(company_id, {
+  const companyUpdate = await Company.findByIdAndUpdate(company_id, {
     status: "active",
     plan: plan_id,
     expiryDate,
-  });
+  }, { new: true });
 
-  await User.findOneAndUpdate(
+
+  const userUpdate = await User.findOneAndUpdate(
     { company: company_id, role: "admin" },
-    { status: "active" }
+    { status: "active" },
+    { new: true }
   );
+  
 };
-
 const handlePaymentFailure = async (notes) => {
   const { company_id } = notes;
 
@@ -46,28 +49,25 @@ const handlePaymentFailure = async (notes) => {
 };
 
 exports.handleRazorpayWebhook = async (rawBody, signature) => {
-  
   verifySignature(rawBody, signature);
 
- 
   const event = JSON.parse(rawBody);
 
- 
-  const notes = event?.payload?.payment?.entity?.notes;
+  let notes;
 
- 
   switch (event.event) {
     case "payment_link.paid":
+      notes = event?.payload?.payment_link?.entity?.notes; // ← fixed path
       await handlePaymentSuccess(notes);
       break;
 
     case "payment_link.cancelled":
     case "payment.failed":
+      notes = event?.payload?.payment_link?.entity?.notes;
       await handlePaymentFailure(notes);
       break;
 
     default:
-      
       break;
   }
 };
