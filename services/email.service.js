@@ -9,7 +9,7 @@ exports.sendWelcomeEmail = async (to,password,companyName)=>{
   Email    : ${to}
   Password : ${password}
 
-Please log in and change your password as soon as possible.
+Please log in and change your password as soon as possible!!.
 
 Regards,
 ${companyName} Team`;
