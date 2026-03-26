@@ -5,6 +5,10 @@ const userRoute = require("./routes/user.route")
 const planRoute = require("./routes/plan.route")
 const errorMiddleware = require("./middlewares/error.middleware")
 const webhookRoute = require("./routes/webhook.route")
+const commentRoute = require("./routes/comment.route");
+const taskRoute = require("./routes/task.rotue");
+const projectRoute = require("./routes/project.route");
+
 const app = express();
 
 app.use("/api/webhooks/razorpay", express.raw({ type: "application/json" }));
@@ -17,9 +21,9 @@ app.use("/api/auth", authRoute);
 app.use("/api/companies",companyRoute);
 app.use("/api/users", userRoute);
 app.use("/api/plans", planRoute);
-app.use("/api/projects", require("./routes/project.route"));
-app.use("/api/tasks", require("./routes/task.rotue"));
-
+app.use("/api/projects", projectRoute);
+app.use("/api/tasks", taskRoute);
+app.user("/api/comments", commentRoute);
 app.get('/',(req,res)=>{
     res.send("TaskManager API is working!");
 });
