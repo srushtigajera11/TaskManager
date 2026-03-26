@@ -90,12 +90,9 @@ exports.updateStatus = async (taskId, data, currentUser) => {
   const task = await Task.findById(taskId);
   if (!task) throw new AppError("Task not found", 404);
 
-  // Company isolation
   if (task.company.toString() !== currentUser.company._id.toString()) {
     throw new AppError("Unauthorized access", 403);
   }
-
-  // ✅ User can only update status of tasks assigned to them
   if (currentUser.role === "user") {
     if (!task.assignedTo || task.assignedTo.toString() !== currentUser._id.toString()) {
       throw new AppError("You can only update status of tasks assigned to you", 403);
