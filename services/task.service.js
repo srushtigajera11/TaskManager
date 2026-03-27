@@ -3,7 +3,59 @@ const Project = require("../models/project.model");
 const User = require("../models/user.model");
 const Task = require("../models/task.model");
 const AppError = require("../utils/AppError");
+const Activity = require("../routes/activity.model");
 
+exports.updateTask = async (taskId, data, currentUser) => {
+
+   const task = await Task.findById(taskId);
+
+   if(!task)
+      throw new AppError("Task not found",404);
+
+   if(task.company.toString() !== currentUser.company.toString())
+      throw new AppError("Unauthorized",403);
+
+   const oldStatus = task.status;
+
+   // user restriction
+   if(currentUser.role === "user"){
+
+      // user can only update status
+      if(!data.status)
+         throw new AppError("User can only update task status",403);
+
+      task.status = data.status;
+
+   }else{
+
+      // admin can update everything
+      Object.assign(task,data);
+
+   }
+
+   await task.save();
+
+   // create activity only if status changed
+   if(data.status && oldStatus !== data.status){
+
+      await Activity.create({
+
+         task: task._id,
+
+         changedBy: currentUser._id,
+
+         oldStatus,
+
+         newStatus: data.status,
+
+         company: currentUser.company
+
+      });
+
+   }
+
+   return task;
+};
 exports.createTask = async (companyId,userId,data)=>{
     const {title,description,project:projectId,reportTo,assignedTo,priority,status,dueDate} = data;
     const company = await Company.findById(companyId);
@@ -29,7 +81,7 @@ exports.createTask = async (companyId,userId,data)=>{
         company: companyId,
         createdBy: userId,
         reportTo,
-        assignedTo: assignedTo || null,
+        assignedTo: assignedTo,
         priority: priority || "medium",
         status: status || "to-do",
         dueDate: dueDate || null
@@ -64,17 +116,6 @@ exports.getTasks = async (companyId, userId, role, query) => {
             .sort({ createdAt: -1 });
     return tasks;
 };
-
-exports.updateTask = async (taskId, data, currentUser) => {
-    const task = await Task.findById(taskId);
-    if(!task) throw new AppError("Task not found",404);
-    if (task.company.toString() !== currentUser.company._id.toString()) {
-        throw new AppError("Unauthorized access", 403);
-    }
-    Object.assign(task, data);
-    await task.save();
-    return task;
-}
 
 exports.deleteTask = async (taskId, currentUser) => {
     const task = await Task.findById(taskId);

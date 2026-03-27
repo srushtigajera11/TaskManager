@@ -1,26 +1,38 @@
 const Comment = require("../models/commemt.model");
 const Task = require("../models/task.model");
 const AppError = require("../utils/AppError");
+const mongoose = require("mongoose");
 
-exports.createComment = async(data,currentUser)=>{
-    const {content,task:taskId} = data;
-    const task = await Task.findById(taskId);
-    if(!task) throw new AppError("Task not found",404);
-    // Company isolation
-    if(task.company.toString() !== currentUser.company._id.toString()){
-        throw new AppError("Unauthorized access",403);
-    }
-    const comment = await Comment.create({
-        content,
-        task : taskId,
-        createdBy : currentUser._id,
-        company : currentUser.company._id,
-    });
+exports.createComment = async (data, currentUser) => {
 
-    return comment;
-}
-    
-const getComments = async(taskId,currentUser)=>{
+   const { content, task: taskId } = data;
+
+   console.log("taskId from request:", taskId);
+   console.log("isValidObjectId:", mongoose.Types.ObjectId.isValid(taskId));
+
+   const task = await Task.findById(taskId);
+
+   console.log("task found:", task);
+
+   if (!task) throw new AppError("Task not found", 404);
+
+   console.log("task.company:", task.company);
+   console.log("user.company:", currentUser.company);
+
+   if (task.company.toString() !== currentUser.company.toString()) {
+      throw new AppError("Unauthorized access", 403);
+   }
+
+   const comment = await Comment.create({
+      content,
+      task: taskId,
+      createdBy: currentUser._id,
+      company: currentUser.company
+   });
+
+   return comment;
+};
+exports.getComments = async(taskId,currentUser)=>{
     const task = await Task.findById(taskId);
     if(!task) throw new AppError("Task not found",404);
     // Company isolation
@@ -31,7 +43,7 @@ const getComments = async(taskId,currentUser)=>{
     return comments;
 }
 
-const deleteComment = async(commentId,currentUser)=>{
+exports.deleteComment = async(commentId,currentUser)=>{
     const comment = await Comment.findById(commentId);
     if(!comment) throw new AppError("Comment not found",404)
     // Company isolation
@@ -44,7 +56,7 @@ const deleteComment = async(commentId,currentUser)=>{
     await comment.deleteOne();
     return true;
 }
-const updateComment = async(commentId,data,currentUser)=>{
+exports.updateComment = async(commentId,data,currentUser)=>{
     const comment = await Comment.findById(commentId);
     if(!comment) throw new AppError("Comment not found",404)
     // Company isolation
