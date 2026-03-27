@@ -130,7 +130,7 @@ src
 └── app.js
 ⚙️ Installation
 1. Clone repository
-git clone https://github.com/yourusername/task-manager-api.git
+git clone https://github.com/srushtigajera11/task-manager-api.git
 cd task-manager-api
 2. Install dependencies
 npm install
