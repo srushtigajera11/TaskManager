@@ -128,19 +128,55 @@ exports.deleteTask = async (taskId, currentUser) => {
 }
 
 exports.updateStatus = async (taskId, data, currentUser) => {
-  const task = await Task.findById(taskId);
-  if (!task) throw new AppError("Task not found", 404);
 
-  if (task.company.toString() !== currentUser.company._id.toString()) {
-    throw new AppError("Unauthorized access", 403);
-  }
-  if (currentUser.role === "user") {
-    if (!task.assignedTo || task.assignedTo.toString() !== currentUser._id.toString()) {
-      throw new AppError("You can only update status of tasks assigned to you", 403);
-    }
-  }
+   const task = await Task.findById(taskId);
 
-  task.status = data.status;
-  await task.save();
-  return task;
+   if (!task)
+      throw new AppError("Task not found", 404);
+
+
+   if (task.company.toString() !== currentUser.company.toString())
+      throw new AppError("Unauthorized access", 403);
+
+
+   if (currentUser.role === "user") {
+
+      if (!task.assignedTo ||
+          task.assignedTo.toString() !== currentUser._id.toString()) {
+
+         throw new AppError(
+            "You can only update status of assigned tasks",
+            403
+         );
+      }
+   }
+
+
+   const oldStatus = task.status;
+
+   task.status = data.status;
+
+   await task.save();
+
+
+   // create activity
+   if (oldStatus !== data.status) {
+
+      await Activity.create({
+
+         task: task._id,
+
+         changedBy: currentUser._id,
+
+         oldStatus,
+
+         newStatus: data.status,
+
+         company: currentUser.company
+
+      });
+   }
+
+
+   return task;
 };
