@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 exports.createCommentSchema = Joi.object({
   content: Joi.string().trim().required(),
-  task: Joi.string().hex().length(24).required(), // MongoDB ObjectId
+  task: Joi.string().hex().length(24).required(), 
   
 });
 
