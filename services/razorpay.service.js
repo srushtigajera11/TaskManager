@@ -9,7 +9,7 @@ const razorpay = new Razorpay({
 
 exports.createPaymentLink = async ({ amount, companyName, adminEmail, companyId, planId }) => {
   try {
-     console.log("Razorpay payload:", { amount, companyName, adminEmail, companyId, planId });
+
     const paymentLink = await razorpay.paymentLink.create({
       amount: amount * 100, // Razorpay expects paise
       currency: "INR",

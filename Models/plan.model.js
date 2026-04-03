@@ -1,8 +1,8 @@
 const mongoose = require("mongoose")
 const planSchema = new mongoose.Schema({
      name : {type:String,required:true},
-        maxUsers : {type:Number , required:true},
-        maxProjects : {type:Number,required : true},
+        maxUsers : {type:Number ,default:null, required:true},
+        maxProjects : {type:Number,default:null,required : true},
         durationInDays :{type:Number , required:true},
         price : {type:Number , required:true},
         isActive : {type:Boolean , default : true}

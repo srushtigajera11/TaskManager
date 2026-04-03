@@ -15,7 +15,8 @@ exports.createUser = async (data, currentUser) => {
     role: "user", 
   });
 
-  if (userCount >= company.plan.maxUsers) {
+  if ( company.plan.maxUsers !== null &&
+  userCount >= company.plan.maxUsers) {
     throw new AppError(
       `User limit reached. Your plan allows maximum ${company.plan.maxUsers} users.`,
       403

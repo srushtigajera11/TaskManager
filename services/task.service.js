@@ -4,6 +4,9 @@ const User = require("../models/user.model");
 const Task = require("../models/task.model");
 const AppError = require("../utils/AppError");
 const Activity = require("../routes/activity.model");
+const sendMail = require("../utils/sendMail");
+const taskAssignedTemplate = require("../utils/taskAssignedTemplate");
+
 
 exports.updateTask = async (taskId, data, currentUser) => {
 
@@ -56,39 +59,126 @@ exports.updateTask = async (taskId, data, currentUser) => {
 
    return task;
 };
-exports.createTask = async (companyId,userId,data)=>{
-    const {title,description,project:projectId,reportTo,assignedTo,priority,status,dueDate} = data;
-    const company = await Company.findById(companyId);
-    if(!company) throw new AppError("Company not found",404);
-    const project = await Project.findById(projectId);
-    if(!project) throw new AppError("Project not found",404);
-    if(project.company.toString() !== companyId.toString()){
-        throw new AppError("Project does not belong to your company",403);
-    }
-    let assignedToUser = null;
-    if(assignedTo){
-        assignedToUser = await User.findById(assignedTo);
-        if(!assignedToUser) throw new AppError("Assigned user not found",404);
-    }
-   const taskCount = await Task.countDocuments({ project: projectId });
-    const taskNumber = String(taskCount + 1).padStart(2, "0");
-    const task_id = `${project.shortCode}-${taskNumber}`; 
-    const task = await Task.create({
-        task_id,
+
+exports.createTask = async (companyId, userId, data) => {
+
+    const {
         title,
         description,
         project: projectId,
-        company: companyId,
-        createdBy: userId,
         reportTo,
-        assignedTo: assignedTo,
+        assignedTo,
+        priority,
+        status,
+        dueDate
+    } = data;
+
+    // check company
+    const company = await Company.findById(companyId);
+    if (!company)
+        throw new AppError("Company not found", 404);
+
+    // check project
+    const project = await Project.findById(projectId);
+    if (!project)
+        throw new AppError("Project not found", 404);
+
+    // check project belongs to company
+    if (project.company.toString() !== companyId.toString()) {
+        throw new AppError("Project does not belong to your company", 403);
+    }
+
+    // assigned user validation
+    let assignedToUser = null;
+
+    if (assignedTo) {
+
+        assignedToUser = await User.findById(assignedTo);
+
+        if (!assignedToUser)
+            throw new AppError("Assigned user not found", 404);
+    }
+
+    // reportTo user validation
+    let reportToUser = null;
+
+    if (reportTo) {
+
+        reportToUser = await User.findById(reportTo);
+
+        if (!reportToUser)
+            throw new AppError("Report user not found", 404);
+    }
+
+    // generate custom task id
+    const taskCount = await Task.countDocuments({ project: projectId });
+
+    const taskNumber = String(taskCount + 1).padStart(2, "0");
+
+    const task_id = `${project.shortCode}-${taskNumber}`;
+
+    // create task
+    const task = await Task.create({
+
+        task_id,
+
+        title,
+
+        description,
+
+        project: projectId,
+
+        company: companyId,
+
+        createdBy: userId,
+
+        reportTo,
+
+        assignedTo,
+
         priority: priority || "medium",
+
         status: status || "to-do",
+
         dueDate: dueDate || null
     });
-    return task;
-}
 
+    // send email if assigned
+    if (assignedToUser) {
+
+        const assignedByUser = await User.findById(userId);
+
+        await sendMail({
+
+            to: assignedToUser.email,
+
+            subject: `New Task Assigned (${task.task_id})`,
+
+            html: taskAssignedTemplate({
+
+                taskId: task.task_id,
+
+                title: task.title,
+
+                description: task.description,
+
+                priority: task.priority,
+
+                assignedBy: assignedByUser?.name || "Admin",
+
+                reportTo: reportToUser?.name || "N/A",
+
+                status: task.status,
+
+                projectName: project.name,
+
+                assignedAt: new Date().toLocaleString()
+            })
+        });
+    }
+
+    return task;
+};
 exports.getTasks = async (companyId, userId, role, query) => {
     const filter = { company: companyId };
     if (role === "user") {
