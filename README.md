@@ -141,7 +141,7 @@ JWT_SECRET=your_secret_key
 4. Run server
 npm run dev
 
-Server will run on:
+Server will run on:-
 
 http://localhost:3000
 📡 API Endpoints
